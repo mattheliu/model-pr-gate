@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.pem
+keys/
+policy.local.json
+*.jsonl
+*.log
+payload.json
+*.zip
+.DS_Store

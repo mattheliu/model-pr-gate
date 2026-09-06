@@ -1,0 +1,6 @@
+{
+  "name": "model-pr-gate", "version": "0.1.0", "private": true,
+  "description": "Signed model provenance checks for GitHub pull requests",
+  "type": "module", "engines": {"node": ">=22"},
+  "scripts": {"test": "node --test", "start": "node src/server.js", "demo": "node bin/demo.js"}
+}

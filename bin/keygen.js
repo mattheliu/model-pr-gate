@@ -1,0 +1,10 @@
+import { generateKeyPairSync } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+const dir = process.argv[2];
+if (!dir) throw new Error('Usage: node bin/keygen.js <key-directory>');
+mkdirSync(dir, { recursive: true, mode: 0o700 });
+const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+writeFileSync(join(dir, 'issuer-private.pem'), privateKey.export({ type: 'pkcs8', format: 'pem' }), { mode: 0o600, flag: 'wx' });
+writeFileSync(join(dir, 'issuer-public.pem'), publicKey.export({ type: 'spki', format: 'pem' }), { mode: 0o644, flag: 'wx' });
+console.log(`Created issuer keys in ${dir}. Keep the private key on the trusted generation service.`);

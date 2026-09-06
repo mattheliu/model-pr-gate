@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "issuer": "generation-service",
+  "repository": "OWNER/REPO",
+  "number": 123,
+  "sha": "REPLACE_WITH_CURRENT_40_CHARACTER_HEAD_SHA",
+  "model": "Astra",
+  "runId": "generation-job-123",
+  "issuedAt": 1788652800
+}
