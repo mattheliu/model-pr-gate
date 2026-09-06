@@ -76,6 +76,13 @@ Action 输出 `verdict`、`reason`、`evidence-level`。CI 日志只有固定结
 [Model PR Gate skill](skills/model-pr-gate/SKILL.md)。指南和 skill 均有中英文版本，
 覆盖仓库接入、PR 验证和可信签发平台接入，不会把本地日志当成认证证据。
 
+## 用一份 prompt 复刻整个项目
+
+把[中文复刻 prompt](prompts/recreate.zh-CN.md) 或 [English prompt](prompts/recreate.md)
+中的完整代码块交给编码 Agent，即可从零实现同等能力的项目。里面包含产品思想、
+隐私原则、信任边界、证明协议、CLI/CI、DSH 插件、i18n、skill 和验收要求，
+不需要原聊天或源码。可信签发平台仍需要实际接入，prompt 不会凭空提供认证。
+
 ## DeepSeek Harness 插件
 
 可选的 [DSH 插件](plugins/dsh/README.zh-CN.md) 提供模型配置预检、离线验签和

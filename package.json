@@ -36,7 +36,8 @@
     "docs/",
     "trusted-keys.example.json",
     "attestation.example.json",
-    "skills/"
+    "skills/",
+    "prompts/"
   ],
   "repository": {
     "type": "git",

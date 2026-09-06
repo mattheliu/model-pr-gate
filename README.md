@@ -102,6 +102,14 @@ Start with the [Agent guide](docs/agent-guide.md) or import the
 The skill covers repository setup, PR proof verification and trusted signer
 integration without treating local logs as authenticated evidence.
 
+## Recreate the project with one prompt
+
+Give a coding agent the complete block in the [English reproduction prompt](prompts/recreate.md)
+or [中文 prompt](prompts/recreate.zh-CN.md). It captures the product philosophy, privacy and
+trust boundaries, proof protocol, CLI/CI, DSH plugin, i18n, skills and acceptance criteria.
+No original conversation or source is needed. A trusted signing platform still requires
+a real integration; the prompt cannot manufacture authentication.
+
 ## DeepSeek Harness plugin
 
 An optional [DSH plugin](plugins/dsh/README.md) provides configured-model preflight,
