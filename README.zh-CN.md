@@ -76,6 +76,11 @@ Action 输出 `verdict`、`reason`、`evidence-level`。CI 日志只有固定结
 [Model PR Gate skill](skills/model-pr-gate/SKILL.md)。指南和 skill 均有中英文版本，
 覆盖仓库接入、PR 验证和可信签发平台接入，不会把本地日志当成认证证据。
 
+## 想法来源
+
+项目的最初想法来自 [@arkuy99](https://x.com/arkuy99) 的
+[这条帖子](https://x.com/arkuy99/status/2096425638018306166?s=20)。
+
 ## 用一份 prompt 复刻整个项目
 
 把[中文复刻 prompt](prompts/recreate.zh-CN.md) 或 [English prompt](prompts/recreate.md)

@@ -2,6 +2,9 @@
 
 **English** · [简体中文](recreate.zh-CN.md)
 
+Idea inspiration: [@arkuy99](https://x.com/arkuy99) and
+[this post](https://x.com/arkuy99/status/2096425638018306166?s=20).
+
 Copy the **entire block below** into a coding agent with file editing, terminal and
 internet access. No original conversation or source checkout is needed. It defines
 the product philosophy, behavior and acceptance criteria for an equivalent project,
@@ -224,6 +227,8 @@ structured arguments or a body file, preserve other text, and re-read the head b
 A skill grants no additional external-write permissions.
 
 Keep English/Chinese copies of this reproduction prompt and link them from the README.
+Preserve the idea credit in both READMEs: @arkuy99 (https://x.com/arkuy99),
+original post: https://x.com/arkuy99/status/2096425638018306166?s=20.
 Use MIT licensing and retain required licenses/attribution when reusing open-source code.
 Use generic OWNER/REPO placeholders and synthetic examples only.
 

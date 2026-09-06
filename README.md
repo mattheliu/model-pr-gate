@@ -102,6 +102,11 @@ Start with the [Agent guide](docs/agent-guide.md) or import the
 The skill covers repository setup, PR proof verification and trusted signer
 integration without treating local logs as authenticated evidence.
 
+## Idea inspiration
+
+The original idea was inspired by [@arkuy99](https://x.com/arkuy99) and
+[this post](https://x.com/arkuy99/status/2096425638018306166?s=20).
+
 ## Recreate the project with one prompt
 
 Give a coding agent the complete block in the [English reproduction prompt](prompts/recreate.md)
