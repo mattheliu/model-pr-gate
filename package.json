@@ -1,6 +1,6 @@
 {
   "name": "model-pr-gate",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Offline verification of minimal signed model proofs, with optional local session auditing",
   "type": "module",
@@ -33,7 +33,8 @@
     "src/attestation.js",
     "docs/",
     "trusted-keys.example.json",
-    "attestation.example.json"
+    "attestation.example.json",
+    "skills/"
   ],
   "repository": {
     "type": "git",

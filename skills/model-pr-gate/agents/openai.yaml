@@ -1,0 +1,4 @@
+interface:
+  display_name: "Model PR Gate"
+  short_description: "Integrate CI and verify minimal model proofs"
+  default_prompt: "Use $model-pr-gate to integrate signed model proof verification into this repository without uploading sessions."

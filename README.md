@@ -45,7 +45,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: mattheliu/model-pr-gate@v0.3.0
+      - uses: mattheliu/model-pr-gate@v0.3.1
         with:
           trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
 ```
@@ -95,10 +95,17 @@ new proof. There is no proof expiry or automatic revocation; key changes require
 re-running checks. Async CI has a delay after PR edits. Merge queues are not yet
 supported. Do not assume a prior green check is an immediate revocation system.
 
+## For coding agents
+
+Start with the [Agent guide](docs/agent-guide.md) or import the
+[Model PR Gate skill](skills/model-pr-gate/SKILL.md). Both include Chinese versions.
+The skill covers repository setup, PR proof verification and trusted signer
+integration without treating local logs as authenticated evidence.
+
 ## Local tools
 
 ```sh
-npm install --global github:mattheliu/model-pr-gate#v0.3.0
+npm install --global github:mattheliu/model-pr-gate#v0.3.1
 model-pr-gate --proof proof.txt --keys trusted-keys.json \
   --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA
 model-pr-gate --lang zh-CN --help
@@ -112,7 +119,7 @@ model-session-audit claude ./session.jsonl
 ```
 
 Session audits are **not** signed proofs. Keep raw sessions local. The optional
-legacy audit action lives at `mattheliu/model-pr-gate/actions/session-audit@v0.3.0`;
+legacy audit action lives at `mattheliu/model-pr-gate/actions/session-audit@v0.3.1`;
 use it only where a local session already exists, not by uploading private logs.
 
 ## Privacy, migration and development

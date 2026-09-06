@@ -1,0 +1,19 @@
+# Register an existing trusted issuer's public keys before enabling this workflow.
+# Protect this workflow using a trusted required-workflow ruleset where supported.
+# Pin the action to a reviewed commit SHA for enforcement.
+name: Model proof
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+permissions: {}
+concurrency:
+  group: model-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mattheliu/model-pr-gate@v0.3.1
+        with:
+          trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
+          # language: zh-CN

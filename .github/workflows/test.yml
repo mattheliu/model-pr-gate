@@ -31,7 +31,7 @@ jobs:
       - name: Verify installable CLI package
         run: |
           npm pack --pack-destination "$RUNNER_TEMP"
-          npm install --global "$RUNNER_TEMP/model-pr-gate-0.3.0.tgz" --ignore-scripts
+          npm install --global "$RUNNER_TEMP/model-pr-gate-0.3.1.tgz" --ignore-scripts
           model-session-audit claude fixture.jsonl
           model-pr-gate --lang zh-CN --help
           node test/installed-proof.mjs
