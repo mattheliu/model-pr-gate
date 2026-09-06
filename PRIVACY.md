@@ -2,30 +2,36 @@
 
 **English** · [简体中文](PRIVACY.zh-CN.md)
 
-The default session CLI is local and read-only. It opens only the file explicitly
-passed on the command line. It does not access the network, scan other folders,
-write caches, or collect telemetry. It parses one JSONL line at a time and does
-not retain transcripts. Memory grows with unique request and turn identifiers
-used for counting and linking, rather than total transcript text.
+## Default: proof verification
 
-CLI output contains model labels, aggregate counts, evidence quality and an observed
-allowlist verdict. It excludes prompts, code, tool arguments, file paths, session
-IDs, request IDs, response IDs and timestamps. IDs are hashed in memory for
-counting. Model labels themselves remain visible: inspect output before sharing
-if your deployment uses confidential model names.
+The Action reads the PR event file GitHub already supplies to its runner. This
+file contains ordinary PR metadata and body; the tool extracts the proof in
+memory. It does not check out code, upload sessions, write caches, run a web
+service, collect telemetry, or make API/network requests. Downloading the Action
+or installing the package still downloads public tool code normally.
 
-No real session files, credentials or user activity reports are distributed in
-this repository. Tests use synthetic fixtures. Example credentials are
-placeholders. Do not commit raw sessions or real signing keys.
+A proof contains model ID, commit SHA, issuer, repository, PR number, format
+version and signature. No conversations, code, personal paths, session/request
+IDs or timestamps. The signer and verifier reject additional fields. Proofs
+are readable, not encrypted, and reveal model usage to anyone who can read the
+PR. Choose a nonpersonal issuer name. CI logs contain only fixed verdict/reason
+and evidence-level values. The workflow and platform still have their normal
+access to the PR; this tool does not change GitHub's existing data handling.
 
-The optional GitHub App is a separate program. When explicitly configured and
-started, it receives GitHub webhook payloads, reads PR metadata/body from GitHub,
-and publishes check results through the GitHub API. It does not upload local
-session files. Run the CLI alone if you only need offline inspection.
+The private signing key never belongs in the PR or verification job. The trusted
+generation platform keeps it and handles its own original requests according
+to its policies; this project does not add a proxy for those requests.
 
-Local logs may be edited, truncated or incomplete. A matching local model label
-is an observation, not authenticated proof of which model generated a PR.
+## Optional local session audit
 
-The composite GitHub Action emits only fixed verdict/evidence-level strings. It
-does not write the detailed CLI JSON into CI logs or upload artifacts. Installing
-the CLI from GitHub downloads public tool code; running its audit is offline.
+`model-session-audit` opens only the specified file and processes it line by line.
+It does not scan other folders or access the network. It discards transcript
+records after parsing; hashes of request/turn IDs remain in memory for counting.
+Memory grows with unique IDs. CLI JSON contains model labels and aggregate counts,
+not prompts, code, paths or raw IDs. Confidential model names may still appear.
+Keep raw sessions local; don't upload them to CI just to run this command.
+
+The optional session audit Action logs only fixed verdict/evidence-level strings.
+It is separate from the default proof verifier and is not an authenticity check.
+No real sessions, credentials or user activity reports are distributed. Tests
+use synthetic data. There is no third-party App service in v0.3.

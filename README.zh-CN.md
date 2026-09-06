@@ -2,109 +2,101 @@
 
 [English](README.md) · **简体中文**
 
-**默认只接受 Astra 和 Fable 5.1 的 PR。**
+**凭签名证明，只接受 Astra 和 Fable 5.1 的 PR，不上传 session。**
 
-做法很简单：读取 Codex 或 Claude Code 的会话记录，检查里面的模型，把结果交给 CI。发现其他模型，或者记录无法确认，就让检查失败。
+可信生成平台出具一份小证明，仓库自己的 CI 离线验签。不需要第三方 GitHub App、会话上传、API key 或后台服务。需要 Node.js 22+，零第三方依赖。
 
-零第三方依赖，不要 API key，不上传会话，不开后台服务。需要 Node.js 22+。
+**工具验证已有证据，不会凭代码猜模型。** 你需要一个可信的生成平台来签发证明。本项目提供签发和验证代码，但尚未接入 OpenAI 或 Anthropic 的原生证明服务。没有可信签发方时，结果就是“无法验证”。
 
-**先说清一个边界：本地记录可以修改。** 检查通过，表示“记录里的模型符合要求”，不等于独立证明了 PR 确实由这些模型完成。你还需要确认这份记录对应当前 PR 的工作。
+## 会分享什么？
 
-## 本地用
+只有模型 ID、提交 SHA、签发方、仓库、PR 编号、格式版本和签名。仓库和 PR 编号用于防止证明被复制到其他地方。
 
-```sh
-npm install --global github:mattheliu/model-pr-gate#v0.2.0
-model-pr-gate codex ./session.jsonl
-# Claude Code 用这个：
-model-pr-gate claude ./session.jsonl
+不包含对话、代码、session ID、请求 ID、个人路径或时间戳；格式会拒绝额外字段。证明是签名，不是加密，能看 PR 的人也能解码这些字段。
+
+由生成平台把证明自动附到 PR 正文里，提交者不需要找日志或上传 session。
+
+## 仓库怎么接？
+
+先把可信签发方的**公钥**放到仓库 Actions 变量 `MODEL_GATE_TRUSTED_KEYS`，内容是 JSON：
+`{"generation-service":"-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n"}`。
+
+私钥始终留在可信生成平台，不交给贡献者的 PR 任务。然后加这个工作流：
+
+```yaml
+name: Model proof
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+permissions: {}
+concurrency:
+  group: model-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mattheliu/model-pr-gate@v0.3.0
+        with:
+          trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
 ```
 
-不用填写白名单，默认精确匹配：
+无需 checkout，也不需要 token。Action 只读取 GitHub 已经提供给 runner 的 PR 事件，不发 API 请求。自定义 runner 要有 Node.js 22+；正式使用可以固定到审核过的 commit SHA。
 
-| 模型 | 接受的 ID |
+**要防止绕过，公钥和工作流都必须受保护。** 贡献者不能把验证步骤改成直接返回成功。支持时，请使用组织或企业的[必需工作流规则](https://docs.github.com/en/enterprise-cloud%40latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)，从可信仓库指定工作流，并限制绕过权限。仅要求一个同名状态成功，不能证明真正的验证器运行过。如果无法强制使用可信工作流，就需要维护者监督，不能宣称它是无法绕过的合并门禁。
+
+## 默认接受哪些模型？
+
+| 模型 | 精确匹配的 ID |
 | --- | --- |
 | Astra | `gpt-6-astra` |
 | Fable 5.1 | `claude-fable-5-1` |
 
-Fable 5 的 `claude-fable-5`、`claude-fable-5-high` 不会通过。工具不做模糊匹配，也不把显示名称当作调用 ID。[Fable 5.1 官方 model ID](https://platform.claude.com/docs/en/models/fable-5-1/overview)。
+Fable 5，包括 `claude-fable-5-high`，不会通过。不做模糊匹配。[Fable 5.1 官方 ID](https://platform.claude.com/docs/en/models/fable-5-1/overview)。
 
-如果需要替换默认白名单：
-
-```sh
-model-pr-gate codex ./session.jsonl gpt-6-astra YOUR_VERIFIED_MODEL_ID
-```
-
-安装时下载工具，检查时完全离线。只读你指定的文件，不自动扫描其他目录。
-
-## 接到 GitHub CI
-
-在生成会话文件的步骤后，加这几行：
-
-```yaml
-- uses: mattheliu/model-pr-gate@v0.2.0
-  with:
-    agent: codex
-    session: ./session.jsonl
-```
-
-发现其他模型、文件不存在或记录不完整时，任务失败。要阻止合并，把这个任务设为仓库分支规则里的必需检查。
-
-Action 本身不需要 token 或写权限；runner 上需要 Node.js 22+。正式接入时，可以把版本号换成审核过的 commit SHA，固定使用的代码。
-
-会话文件必须已在 runner 上。GitHub CI 不能直接读取你电脑里的记录。不要为了跑检查，把原始 session 提交到仓库或上传成公开附件。贡献者提供的日志也可能伪造，不能单靠它认证来源。
-
-其他选项都是可选的：
-
-```yaml
-- uses: mattheliu/model-pr-gate@v0.2.0
-  id: model-audit
-  with:
-    agent: claude
-    session: ./session.jsonl
-    mode: report           # 只报告，不阻止；默认 enforce
-    language: zh-CN        # 中文提示；默认 en
-    allowed-models: |      # 替换默认白名单，每行一个准确 ID
-      gpt-6-astra
-      YOUR_VERIFIED_MODEL_ID
-```
-
-## 怎么看结果
+可选参数：`language: zh-CN` 使用中文提示；`mode: report` 只报告，不因证明缺失或无效而阻止；`allowed-models` 每行一个 ID，替换默认白名单。配置错误始终失败，默认模式是 `enforce`。
 
 | 退出码 | 结果 | 意思 |
 | --- | --- | --- |
-| 0 | `observed-models-allowed` | 看到的模型都符合白名单 |
-| 1 | `observed-disallowed-model` | 发现了其他模型 |
-| 2 | `unknown` / 出错 | 缺少记录、记录不完整、格式错误或无法读取 |
+| 0 | `verified` | 签名可信，PR 和提交匹配，模型符合要求 |
+| 1 | `rejected` | 证明无效、不匹配或模型不符合 |
+| 2 | `unverified` / 出错 | 缺少证明，或者配置、事件有误 |
 
-`report` 模式不会因为不符合或无法确认而让任务失败；模式名或语言配置写错仍会失败。Action 输出 `verdict` 和 `evidence-level`，后者固定为 `local-unverified`，表示未经独立认证的本地证据。
+Action 输出 `verdict`、`reason`、`evidence-level`。CI 日志只有固定结果，不打印证明内容或模型名。`trusted-issuer` 表示信任该签发方，不代表提供商独立背书。
 
-Codex 记录的是每轮**配置的模型**；Claude 记录的是**随响应保存的模型字段**。它们都不是提供商签名回执。子任务的 session 要单独检查，统计数量也不能当作账单数据。
+## 谁来签发？
 
-## 隐私和体积
+见[签发接入说明](docs/signer.zh-CN.md)。签发方必须控制生成过程，并确认最终提交。给客户端随便报的模型名称或可修改的 session 签名，不会让它变可信。
 
-逐行读取，不保存原始记录。命令行只返回模型、计数和结果；CI 日志更少，只显示结果和证据级别。不会导出对话、代码、目录、session ID 或请求 ID。
+代码新增提交后必须重新签发。当前没有证明到期或自动撤销，换公钥后需要重新跑检查。CI 异步执行，PR 编辑后存在更新延迟；旧的绿色状态不是即时撤销机制。暂不支持合并队列。
 
-CLI 安装包只包含命令、解析器和文档，除 Node.js 外没有运行依赖。用合成数据测过：约 1.7 MB、2 万行记录，单机耗时约 0.09 秒，常驻内存峰值约 66 MiB（包含 Node.js）。实际表现取决于机器和输入；用于计数的唯一 ID 越多，内存也会增加。详见[隐私说明](PRIVACY.zh-CN.md)。
-
-## 中英文
+## 本地工具
 
 ```sh
+npm install --global github:mattheliu/model-pr-gate#v0.3.0
+model-pr-gate --proof proof.txt --keys trusted-keys.json \
+  --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA
 model-pr-gate --lang zh-CN --help
-model-pr-gate --lang en --help
 ```
 
-提示支持中英文。JSON 字段名和结果值保持一致，不会因为切换语言影响其他工具。
-
-## 需要更可靠的证明？
-
-源码里另有可选的[签名证明 GitHub App](docs/github-app.zh-CN.md)，不会随小型 CLI 一起安装。由可信生成服务签署“模型＋PR 提交”的证明，再由 App 验证。前提仍然是签发服务本身可信。
-
-## 开发
+个人需要离线查看自己的模型记录时，另有审计命令：
 
 ```sh
-git clone https://github.com/mattheliu/model-pr-gate.git
-cd model-pr-gate
-npm test
+model-session-audit codex ./session.jsonl
+model-session-audit claude ./session.jsonl
 ```
 
-测试均用合成数据，MIT 许可。仓库不包含真实会话或私人凭据。
+本地审计**不是**签名证明。原始 session 留在本地。旧审计 Action 放在 `mattheliu/model-pr-gate/actions/session-audit@v0.3.0`，仅适用于 runner 原本就有日志的情况，不推荐为了检查而上传隐私日志。
+
+## 隐私、迁移和开发
+
+[隐私说明](PRIVACY.zh-CN.md)。仓库不含真实会话或凭据。
+
+v0.3 的默认 Action 从日志检查改为签名验证，旧 HTTP GitHub App 已移除，v0.2 仍保留在 Git 历史中。这一版不启动任何服务。
+
+```sh
+npm test
+npm run demo
+```
+
+测试使用合成数据，覆盖签名篡改、跨 PR 复用、隐私和 CLI/CI 接入。MIT 许可。

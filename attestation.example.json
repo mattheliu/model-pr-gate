@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "issuer": "generation-service",
+  "model": "claude-fable-5-1",
+  "repository": "OWNER/REPO",
+  "number": 123,
+  "sha": "REPLACE_WITH_CURRENT_40_CHARACTER_HEAD_SHA"
+}

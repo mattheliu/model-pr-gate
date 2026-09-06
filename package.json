@@ -1,20 +1,20 @@
 {
   "name": "model-pr-gate",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Offline, privacy-first model allowlist auditing for Codex and Claude Code sessions",
+  "description": "Offline verification of minimal signed model proofs, with optional local session auditing",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test",
-    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
     "demo": "node bin/demo.js"
   },
   "license": "MIT",
   "bin": {
-    "model-pr-gate": "bin/inspect-session.js"
+    "model-pr-gate": "bin/verify.js",
+    "model-session-audit": "bin/inspect-session.js"
   },
   "files": [
     "bin/inspect-session.js",
@@ -26,11 +26,21 @@
     "src/defaults.js",
     "src/i18n.js",
     "README.zh-CN.md",
-    "PRIVACY.zh-CN.md"
+    "PRIVACY.zh-CN.md",
+    "bin/verify.js",
+    "bin/sign-attestation.js",
+    "bin/keygen.js",
+    "src/attestation.js",
+    "docs/",
+    "trusted-keys.example.json",
+    "attestation.example.json"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mattheliu/model-pr-gate.git"
   },
-  "homepage": "https://github.com/mattheliu/model-pr-gate"
+  "homepage": "https://github.com/mattheliu/model-pr-gate",
+  "exports": {
+    ".": "./src/attestation.js"
+  }
 }

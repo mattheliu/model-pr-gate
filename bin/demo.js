@@ -1,12 +1,9 @@
 import { generateKeyPairSync } from 'node:crypto';
-import { signProof, evaluate, validatePolicy } from '../src/proof.js';
-const keys = generateKeyPairSync('ed25519');
-const policy = validatePolicy({ allowedModels: ['gpt-6-astra', 'claude-fable-5-1'], trustedIssuers: {
-  demo: { publicKey: keys.publicKey.export({ type: 'spki', format: 'pem' }), models: ['gpt-6-astra', 'claude-fable-5-1'] }
-} });
-const context = { repository: 'example/project', number: 7, sha: 'a'.repeat(40) };
-for (const model of ['gpt-6-astra', 'claude-fable-5-1', 'Other Model']) {
-  const body = signProof({ version: 1, issuer: 'demo', ...context, model, runId: 'demo-run', issuedAt: Math.floor(Date.now() / 1000) }, keys.privateKey);
-  console.log(model, evaluate({ ...context, body }, policy));
+import { signAttestation, verifyAttestation } from '../src/attestation.js';
+const pair = generateKeyPairSync('ed25519');
+const keys = { demo: pair.publicKey.export({type:'spki',format:'pem'}) };
+const subject = { repository:'example/repo', number:1, sha:'a'.repeat(40) };
+for (const model of ['gpt-6-astra','claude-fable-5-1','claude-fable-5-high']) {
+  const body = signAttestation({ version:2, issuer:'demo', model, ...subject }, pair.privateKey);
+  console.log(model, verifyAttestation({body,...subject}, keys));
 }
-console.log('Missing proof', evaluate({ ...context, body: 'Made by Astra' }, policy));

@@ -2,129 +2,131 @@
 
 **English** · [简体中文](README.zh-CN.md)
 
-**Only accept PRs made with Astra or Fable 5.1.**
+**Accept signed PR proofs for Astra and Fable 5.1, without uploading sessions.**
 
-That's the default policy. This small tool reads a Codex or Claude Code session,
-checks the recorded models, and returns a result your CI can use.
+A trusted generation service signs a small record. Your repository's CI checks
+that signature offline. No third-party GitHub App, session uploads, API keys or
+background service are needed for verification. Node.js 22+, zero dependencies.
 
-No dependencies, API keys, transcript uploads, or background service. Node.js 22+.
+**This verifies evidence; it does not discover which model wrote arbitrary code.**
+You need a generation platform you trust to issue the proof. This project provides
+the signer and verifier, but has no built-in OpenAI or Anthropic attestation
+integration. Without a trusted signer, the result is `unverified`.
 
-**One limit:** a local session can be edited. A passing result means the recorded
-models match your policy, not that the PR's authorship has been independently
-verified. The session must also belong to the work you want to check.
+## What gets shared?
 
-## Run locally
+Only model ID, commit SHA, issuer, repository, PR number, format version and
+signature. Repository and PR bind the proof to its destination. No prompts, code,
+session IDs, request IDs, personal paths or timestamps. Extra fields are rejected.
+The proof is signed, not encrypted: anyone who can read the PR can decode it.
 
-```sh
-npm install --global github:mattheliu/model-pr-gate#v0.2.0
-model-pr-gate codex ./session.jsonl
-# Or:
-model-pr-gate claude ./session.jsonl
+The generation platform appends this small proof to the PR body automatically.
+Contributors shouldn't have to find or upload a session file.
+
+## Connect a repository
+
+First, register the signer's **public** keys in a repository Actions variable
+called `MODEL_GATE_TRUSTED_KEYS`. It is a JSON object like
+`{"generation-service":"-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n"}`.
+The private key stays with the trusted generator, never in a contributor's PR job.
+
+Add this workflow:
+
+```yaml
+name: Model proof
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+permissions: {}
+concurrency:
+  group: model-proof-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mattheliu/model-pr-gate@v0.3.0
+        with:
+          trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
 ```
 
-Defaults match these exact IDs:
+No checkout or token is needed. The action reads the PR event GitHub already
+provides to the runner; it makes no API calls. Use Node.js 22+ on custom runners.
+Pin the action to a reviewed commit SHA for immutable code.
 
-| Model | Accepted ID |
+**For tamper-resistant enforcement, protect the workflow as well as the keys.**
+A contributor must not be able to replace this check with a successful no-op.
+Use an organization/enterprise [required-workflow ruleset](https://docs.github.com/en/enterprise-cloud%40latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
+where supported, sourced from a trusted repository. A same-named required status
+alone does not establish that the intended verifier ran. Restrict bypasses.
+If your repository cannot enforce a trusted workflow, treat this as a verification
+check with maintainer oversight, not an unbypassable merge policy.
+
+## Default policy
+
+| Model | Exact accepted ID |
 | --- | --- |
 | Astra | `gpt-6-astra` |
 | Fable 5.1 | `claude-fable-5-1` |
 
-Fable 5 (`claude-fable-5`, `claude-fable-5-high`) is not accepted. No fuzzy
-matching or display-name aliases. [Fable 5.1's official model ID](https://platform.claude.com/docs/en/models/fable-5-1/overview).
+Fable 5, including `claude-fable-5-high`, is rejected. No fuzzy matching.
+[Fable 5.1 official ID](https://platform.claude.com/docs/en/models/fable-5-1/overview).
 
-To replace the default allowlist:
+Optional inputs: `language: zh-CN`, `mode: report` (don't block on a bad/missing
+proof), and `allowed-models` (one exact ID per line, replaces defaults).
+Configuration errors always fail. Default mode is `enforce`.
 
-```sh
-model-pr-gate codex ./session.jsonl gpt-6-astra YOUR_VERIFIED_MODEL_ID
-```
-
-Install once; checking sessions works offline. Nothing is automatically scanned.
-
-## Add to GitHub Actions
-
-Put this after the step that generates your session on the runner:
-
-```yaml
-- uses: mattheliu/model-pr-gate@v0.2.0
-  with:
-    agent: codex
-    session: ./session.jsonl
-```
-
-It fails the job if another model is found or the record can't be checked. To
-block merging, make that job a required check in your repository's branch rules.
-The action itself needs no token or write permission. Use a runner with Node.js
-22+; pin to a reviewed commit SHA when you need an immutable action reference.
-
-The runner needs the file. It cannot read sessions from your laptop. Don't commit
-raw sessions or upload them as public artifacts just to pass the check. Logs
-supplied by a PR contributor can be forged; they are not an authentication method.
-
-Optional settings:
-
-```yaml
-- uses: mattheliu/model-pr-gate@v0.2.0
-  id: model-audit
-  with:
-    agent: claude
-    session: ./session.jsonl
-    mode: report           # Report without blocking; default is enforce
-    language: zh-CN        # Human messages; default is en
-    allowed-models: |      # Replaces defaults; exact IDs, one per line
-      gpt-6-astra
-      YOUR_VERIFIED_MODEL_ID
-```
-
-## Understand the result
-
-| Exit | Result | Meaning |
+| Exit | Verdict | Meaning |
 | --- | --- | --- |
-| 0 | `observed-models-allowed` | All observed models are allowed |
-| 1 | `observed-disallowed-model` | Another model was found |
-| 2 | `unknown` / error | Missing, incomplete, malformed or unreadable evidence |
+| 0 | `verified` | Trusted signature, matching PR/head and allowed model |
+| 1 | `rejected` | Invalid, mismatched or disallowed proof |
+| 2 | `unverified` / error | Missing proof or invalid configuration/event |
 
-In `report` mode, a disallowed or unknown result does not fail the job. Invalid
-mode/language settings still fail. Action outputs are `verdict` and
-`evidence-level`, always `local-unverified`.
+Action outputs: `verdict`, `reason`, `evidence-level`. CI logs contain only fixed
+results, not proof contents or model names. `trusted-issuer` means we trust that
+signer; it is not an independent provider endorsement.
 
-Codex records tell us the **configured** model. Claude assistant records tell us
-the model **saved with the response**. Neither is a signed provider receipt.
-Child sessions must be checked separately. Counts are not billing metrics.
+## Set up a signer
 
-## Privacy and size
+See [the signer guide](docs/signer.md). The issuer must control generation and
+verify the final commit. Signing an arbitrary client-supplied model label or
+locally edited session does not make it trustworthy. Any later commit needs a
+new proof. There is no proof expiry or automatic revocation; key changes require
+re-running checks. Async CI has a delay after PR edits. Merge queues are not yet
+supported. Do not assume a prior green check is an immediate revocation system.
 
-Only the file you specify is read, one line at a time. The CLI returns model
-labels, counts and a verdict. CI logs show only the verdict and evidence level.
-Neither exports prompts, code, paths, session IDs or request IDs.
-
-The CLI package contains just the parser, command and docs. There are no runtime
-dependencies beyond Node.js. A synthetic 1.7 MB / 20,000-line test took about
-0.09 seconds and 66 MiB resident memory including Node.js on one machine. Memory
-also grows with unique IDs used for counting. See [privacy details](PRIVACY.md).
-
-## Language
+## Local tools
 
 ```sh
+npm install --global github:mattheliu/model-pr-gate#v0.3.0
+model-pr-gate --proof proof.txt --keys trusted-keys.json \
+  --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA
 model-pr-gate --lang zh-CN --help
-model-pr-gate --lang en --help
 ```
 
-Human messages support English and Simplified Chinese. JSON keys and verdicts
-stay the same in both languages so integrations don't break.
-
-## Need stronger proof?
-
-The source repository includes an optional [signed-proof GitHub App](docs/github-app.md).
-It is separate from the small CLI. A trusted generation service signs the model
-and PR commit; the app verifies that proof. It still needs a trustworthy signer.
-
-## Develop
+For personal, offline session auditing only:
 
 ```sh
-git clone https://github.com/mattheliu/model-pr-gate.git
-cd model-pr-gate
-npm test
+model-session-audit codex ./session.jsonl
+model-session-audit claude ./session.jsonl
 ```
 
-Tests use synthetic data. MIT licensed. No real sessions or private credentials
-are included.
+Session audits are **not** signed proofs. Keep raw sessions local. The optional
+legacy audit action lives at `mattheliu/model-pr-gate/actions/session-audit@v0.3.0`;
+use it only where a local session already exists, not by uploading private logs.
+
+## Privacy, migration and development
+
+[Privacy details](PRIVACY.md). No real sessions or credentials are included.
+
+v0.3 changes the root action from session auditing to signature verification.
+The old HTTP GitHub App has been removed; v0.2 remains in Git history. No service
+is started by this release.
+
+```sh
+npm test
+npm run demo
+```
+
+Synthetic tests cover tampering, cross-PR replay, privacy and CLI/CI integration.
+MIT licensed.

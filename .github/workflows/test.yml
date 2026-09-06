@@ -19,7 +19,7 @@ jobs:
       - name: Create synthetic session
         run: |
           node --input-type=module -e 'import fs from "node:fs"; fs.writeFileSync("fixture.jsonl", JSON.stringify({type:"assistant",message:{model:"claude-fable-5-1"}})+"\n")'
-      - uses: ./
+      - uses: ./actions/session-audit
         id: audit
         with:
           agent: claude
@@ -31,5 +31,7 @@ jobs:
       - name: Verify installable CLI package
         run: |
           npm pack --pack-destination "$RUNNER_TEMP"
-          npm install --global "$RUNNER_TEMP/model-pr-gate-0.2.0.tgz" --ignore-scripts
-          model-pr-gate claude fixture.jsonl
+          npm install --global "$RUNNER_TEMP/model-pr-gate-0.3.0.tgz" --ignore-scripts
+          model-session-audit claude fixture.jsonl
+          model-pr-gate --lang zh-CN --help
+          node test/installed-proof.mjs
