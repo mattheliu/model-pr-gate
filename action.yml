@@ -1,0 +1,42 @@
+name: Model PR Gate
+description: Offline model allowlist audit of a local Codex or Claude Code session. No transcript uploads.
+author: mattheliu
+branding:
+  icon: shield
+  color: green
+inputs:
+  agent:
+    description: Session format, codex or claude
+    required: true
+  session:
+    description: Path to the session JSONL on this runner
+    required: true
+  allowed-models:
+    description: Optional exact model IDs, one per line. Defaults to Astra and Fable 5.1.
+    required: false
+  language:
+    description: Human-readable messages, en or zh-CN. Machine outputs are stable.
+    default: en
+  mode:
+    description: enforce fails on disallowed or unknown; report returns the verdict without blocking
+    default: enforce
+outputs:
+  verdict:
+    description: observed-models-allowed, observed-disallowed-model, or unknown
+    value: ${{ steps.audit.outputs.verdict }}
+  evidence-level:
+    description: Always local-unverified; this Action is not an authenticity verifier
+    value: ${{ steps.audit.outputs.evidence-level }}
+runs:
+  using: composite
+  steps:
+    - name: Audit local model metadata
+      id: audit
+      shell: bash
+      env:
+        MODEL_GATE_AGENT: ${{ inputs.agent }}
+        MODEL_GATE_SESSION: ${{ inputs.session }}
+        MODEL_GATE_ALLOWED: ${{ inputs.allowed-models }}
+        MODEL_GATE_LANGUAGE: ${{ inputs.language }}
+        MODEL_GATE_MODE: ${{ inputs.mode }}
+      run: node "$GITHUB_ACTION_PATH/bin/action.js"

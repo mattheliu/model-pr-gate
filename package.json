@@ -1,6 +1,36 @@
 {
-  "name": "model-pr-gate", "version": "0.1.0", "private": true,
-  "description": "Signed model provenance checks for GitHub pull requests",
-  "type": "module", "engines": {"node": ">=22"},
-  "scripts": {"test": "node --test", "start": "node src/server.js", "demo": "node bin/demo.js"}
+  "name": "model-pr-gate",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Offline, privacy-first model allowlist auditing for Codex and Claude Code sessions",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js",
+    "demo": "node bin/demo.js"
+  },
+  "license": "MIT",
+  "bin": {
+    "model-pr-gate": "bin/inspect-session.js"
+  },
+  "files": [
+    "bin/inspect-session.js",
+    "src/session.js",
+    "src/session-file.js",
+    "README.md",
+    "PRIVACY.md",
+    "LICENSE",
+    "src/defaults.js",
+    "src/i18n.js",
+    "README.zh-CN.md",
+    "PRIVACY.zh-CN.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattheliu/model-pr-gate.git"
+  },
+  "homepage": "https://github.com/mattheliu/model-pr-gate"
 }

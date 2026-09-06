@@ -1,7 +1,8 @@
+import { DEFAULT_ALLOWED_MODELS } from './defaults.js';
 import { createHash } from 'node:crypto';
 
 // Only known structural fields are inspected. Prose, prompts and tool output are never searched.
-export function sessionInspector(agent, allowedModels = []) {
+export function sessionInspector(agent, allowedModels = DEFAULT_ALLOWED_MODELS) {
   if (!['codex', 'claude'].includes(agent)) throw new Error('Agent must be codex or claude');
   const models = new Map(); const contexts = new Set(); const usageTurns = new Map();
   const requestHashes = new Set(); let malformedLines = 0; let invalidModels = 0;
@@ -45,7 +46,7 @@ export function sessionInspector(agent, allowedModels = []) {
     }
   };
 }
-export function inspectSession(raw, agent, allowedModels = []) {
+export function inspectSession(raw, agent, allowedModels = DEFAULT_ALLOWED_MODELS) {
   const inspector = sessionInspector(agent, allowedModels);
   for (const line of raw.split('\n')) inspector.line(line);
   return inspector.result();

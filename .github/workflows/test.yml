@@ -1,0 +1,35 @@
+name: Test
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - name: Create synthetic session
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; fs.writeFileSync("fixture.jsonl", JSON.stringify({type:"assistant",message:{model:"claude-fable-5-1"}})+"\n")'
+      - uses: ./
+        id: audit
+        with:
+          agent: claude
+          session: fixture.jsonl
+      - name: Verify action output
+        env:
+          VERDICT: ${{ steps.audit.outputs.verdict }}
+        run: test "$VERDICT" = observed-models-allowed
+      - name: Verify installable CLI package
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          npm install --global "$RUNNER_TEMP/model-pr-gate-0.2.0.tgz" --ignore-scripts
+          model-pr-gate claude fixture.jsonl

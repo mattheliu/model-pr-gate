@@ -1,9 +1,15 @@
 {
-  "allowedModels": ["Astra", "Fable 5.1"],
+  "allowedModels": [
+    "gpt-6-astra",
+    "claude-fable-5-1"
+  ],
   "trustedIssuers": {
     "generation-service": {
       "publicKey": "REPLACE_WITH_ED25519_PUBLIC_KEY_PEM",
-      "models": ["Astra", "Fable 5.1"]
+      "models": [
+        "gpt-6-astra",
+        "claude-fable-5-1"
+      ]
     }
   }
 }
