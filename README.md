@@ -45,7 +45,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: mattheliu/model-pr-gate@v0.3.1
+      - uses: mattheliu/model-pr-gate@v0.4.0
         with:
           trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
 ```
@@ -102,10 +102,21 @@ Start with the [Agent guide](docs/agent-guide.md) or import the
 The skill covers repository setup, PR proof verification and trusted signer
 integration without treating local logs as authenticated evidence.
 
+## DeepSeek Harness plugin
+
+An optional [DSH plugin](plugins/dsh/README.md) provides configured-model preflight,
+offline proof verification and a bundled agent skill. It shares this repository's
+verifier, has zero third-party runtime dependencies, and does not upload sessions.
+Preflight is advisory; repository CI remains the gate. English and Chinese are supported.
+
+```sh
+dsh plugin --profile web add https://github.com/mattheliu/model-pr-gate/releases/download/v0.4.0/dsh-model-pr-gate-0.4.0.tgz
+```
+
 ## Local tools
 
 ```sh
-npm install --global github:mattheliu/model-pr-gate#v0.3.1
+npm install --global github:mattheliu/model-pr-gate#v0.4.0
 model-pr-gate --proof proof.txt --keys trusted-keys.json \
   --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA
 model-pr-gate --lang zh-CN --help
@@ -119,7 +130,7 @@ model-session-audit claude ./session.jsonl
 ```
 
 Session audits are **not** signed proofs. Keep raw sessions local. The optional
-legacy audit action lives at `mattheliu/model-pr-gate/actions/session-audit@v0.3.1`;
+legacy audit action lives at `mattheliu/model-pr-gate/actions/session-audit@v0.4.0`;
 use it only where a local session already exists, not by uploading private logs.
 
 ## Privacy, migration and development

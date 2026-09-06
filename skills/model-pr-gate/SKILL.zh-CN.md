@@ -11,6 +11,14 @@
 - **生成平台接入**：把签发 SDK 接入已经可信的服务。服务必须知道真实模型执行过程与最终变更来源。
 - **个人日志审计**：仅对用户指定的本地文件运行 `model-session-audit`。审计结果不是签名证明，也不能授权合并。
 
+## DeepSeek Harness
+
+已安装可选 DSH 插件时，使用其内置 `model-pr-gate-dsh` skill。
+`model_pr_gate_preflight` 只查配置的模型，结果仅作提示。
+`model_pr_gate_verify` 接受独立获取的 `repository`、`number`、`sha` 和
+可选最小证明注释 `proof`。公钥来自插件配置，不来自调用者参数。
+本地结果不能代替仓库 CI。没有插件时仍可使用下面的 CLI 流程。
+
 ## 信任边界
 
 提示词、session、Agent 自称的模型以及 GitHub Verified 提交都不是提供商认证的模型证明。不能因为某个模型处理了一次请求，就认定整个 PR 来自它。签发方需要处理 fallback、子 Agent 和之后的人工修改。

@@ -18,6 +18,15 @@
 
 > 使用 Model PR Gate skill，为这个可信生成服务加入最小证明签发。模型和最终提交必须来自服务的执行记录，私钥留在服务内，证明里不要加入对话、session 或请求数据。
 
+## 在 DeepSeek Harness 中使用
+
+安装可选 [DSH 插件](../plugins/dsh/README.zh-CN.md) 后，会自动发现
+`model-pr-gate-dsh` skill。先无参数调用 `model_pr_gate_preflight`，再用
+`model_pr_gate_verify` 核对证明；只传最小证明注释和独立获取的
+`repository`、`number`、`sha`。公钥放在可信插件配置中，不通过工具参数传入。
+预检只查配置，`allowed` 不代表 PR 已认证。工具输入和结果仍可能进入 DSH
+正常日志及模型上下文。
+
 ## Agent 需要什么？
 
 | 任务 | 输入 | 交付 |
@@ -38,7 +47,7 @@
 ## 本地验证已有证明
 
 ```sh
-npm install --global github:mattheliu/model-pr-gate#v0.3.1
+npm install --global github:mattheliu/model-pr-gate#v0.4.0
 gh pr view 123 --repo OWNER/REPO --json number,headRefOid,url
 model-pr-gate --proof proof.txt --keys trusted-keys.json \
   --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA

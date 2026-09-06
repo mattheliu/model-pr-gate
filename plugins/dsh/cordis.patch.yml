@@ -1,0 +1,3 @@
+- insert:
+    - id: model-pr-gate
+      name: dsh-model-pr-gate

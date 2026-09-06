@@ -1,6 +1,6 @@
 {
   "name": "model-pr-gate",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "description": "Offline verification of minimal signed model proofs, with optional local session auditing",
   "type": "module",
@@ -8,7 +8,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "test": "node scripts/prepare-dsh.mjs && node --test test/*.test.js",
+    "prepare:dsh": "node scripts/prepare-dsh.mjs",
+    "pack:dsh": "npm pack ./plugins/dsh",
     "demo": "node bin/demo.js"
   },
   "license": "MIT",

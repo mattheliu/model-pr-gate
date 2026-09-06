@@ -13,7 +13,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: mattheliu/model-pr-gate@v0.3.1
+      - uses: mattheliu/model-pr-gate@v0.4.0
         with:
           trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
           # language: zh-CN

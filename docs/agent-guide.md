@@ -29,6 +29,15 @@ No plugin, daemon or hosted App is required.
 > Derive the actual model and final commit from its execution records. Keep private
 > keys inside the service and add no prompt, session or request data to the proof.
 
+## Use inside DeepSeek Harness
+
+Install the optional [DSH plugin](../plugins/dsh/README.md) to discover
+`model-pr-gate-dsh` automatically. Run `model_pr_gate_preflight` with no arguments,
+then `model_pr_gate_verify` with only the proof comment and independently obtained
+`repository`, `number`, `sha`. Public keys belong in trusted plugin configuration,
+not tool arguments. Preflight checks configuration only; `allowed` is not a
+verified PR. Tool inputs/results may enter DSH's normal logs and model context.
+
 ## What the agent needs
 
 | Task | Required inputs | Result |
@@ -56,7 +65,7 @@ otherwise explicitly report the remaining maintainer-enforcement requirement.
 ## Verify a supplied proof locally
 
 ```sh
-npm install --global github:mattheliu/model-pr-gate#v0.3.1
+npm install --global github:mattheliu/model-pr-gate#v0.4.0
 gh pr view 123 --repo OWNER/REPO --json number,headRefOid,url
 model-pr-gate --proof proof.txt --keys trusted-keys.json \
   --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA

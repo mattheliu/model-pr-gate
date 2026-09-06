@@ -21,6 +21,15 @@ Default accepted IDs are `gpt-6-astra` and `claude-fable-5-1`.
 - **Personal session audit:** run `model-session-audit` only on a user-designated
   local file. Its result is never a signed proof or merge authorization.
 
+## DeepSeek Harness
+
+When the optional DSH plugin is installed, use its bundled `model-pr-gate-dsh`
+skill. `model_pr_gate_preflight` reads only the configured model and is advisory.
+`model_pr_gate_verify` takes `repository`, `number`, `sha` and optional minimal
+`proof` comment; obtain the subject independently. Public keys come from plugin
+configuration, not the caller. Its local result never replaces repository CI.
+Without the plugin, the normal CLI workflow below still applies.
+
 ## Trust boundary
 
 A model name in a prompt, a session file, an agent self-description or a GitHub

@@ -1,0 +1,19 @@
+{
+  "name": "dsh-model-pr-gate",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Private-by-default PR model preflight and offline proof verification for DeepSeek Harness",
+  "type": "module",
+  "main": "index.js",
+  "exports": "./index.js",
+  "engines": { "node": ">=22" },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattheliu/model-pr-gate.git",
+    "directory": "plugins/dsh"
+  },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "files": ["index.js", "checks.js", "i18n.js", "core/", "skills/", "cordis.patch.yml", "README.md", "README.zh-CN.md", "LICENSE"],
+  "scripts": { "prepack": "node ../../scripts/prepare-dsh.mjs" }
+}

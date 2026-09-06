@@ -22,6 +22,20 @@ The private signing key never belongs in the PR or verification job. The trusted
 generation platform keeps it and handles its own original requests according
 to its policies; this project does not add a proxy for those requests.
 
+## Optional DeepSeek Harness plugin
+
+The DSH plugin reads only the current agent's configured model ID, explicitly
+supplied minimal proof/PR metadata, and its bundled skill files. It does not
+inspect sessions or API credentials, intercept requests, call GitHub, upload,
+collect telemetry, or store history. Outputs contain fixed results and localized
+explanations. Public issuer keys belong in local plugin configuration; private
+signing keys are never needed. Installation downloads the public package normally.
+
+DSH may record tool arguments/results in its own session log and send them to the
+selected model as context. Pass only minimal proof metadata, never sessions,
+full PR bodies or secrets. The plugin does not change the host/provider's data
+handling. Its configured-model preflight is advisory and provides no signed evidence.
+
 ## Optional local session audit
 
 `model-session-audit` opens only the specified file and processes it line by line.

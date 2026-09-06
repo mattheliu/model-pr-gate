@@ -8,3 +8,6 @@ policy.local.json
 payload.json
 *.zip
 .DS_Store
+*.tgz
+plugins/dsh/core/
+plugins/dsh/LICENSE

@@ -36,7 +36,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: mattheliu/model-pr-gate@v0.3.1
+      - uses: mattheliu/model-pr-gate@v0.4.0
         with:
           trusted-keys: ${{ vars.MODEL_GATE_TRUSTED_KEYS }}
 ```
@@ -76,10 +76,20 @@ Action 输出 `verdict`、`reason`、`evidence-level`。CI 日志只有固定结
 [Model PR Gate skill](skills/model-pr-gate/SKILL.md)。指南和 skill 均有中英文版本，
 覆盖仓库接入、PR 验证和可信签发平台接入，不会把本地日志当成认证证据。
 
+## DeepSeek Harness 插件
+
+可选的 [DSH 插件](plugins/dsh/README.zh-CN.md) 提供模型配置预检、离线验签和
+内置 Agent skill。与本仓库共用验签核心，零第三方运行依赖，不上传 session。
+预检仅作提示，仓库仍由 CI 验签放行，工具与指南均支持中英文。
+
+```sh
+dsh plugin --profile web add https://github.com/mattheliu/model-pr-gate/releases/download/v0.4.0/dsh-model-pr-gate-0.4.0.tgz
+```
+
 ## 本地工具
 
 ```sh
-npm install --global github:mattheliu/model-pr-gate#v0.3.1
+npm install --global github:mattheliu/model-pr-gate#v0.4.0
 model-pr-gate --proof proof.txt --keys trusted-keys.json \
   --repository OWNER/REPO --pr 123 --sha FULL_HEAD_SHA
 model-pr-gate --lang zh-CN --help
@@ -92,7 +102,7 @@ model-session-audit codex ./session.jsonl
 model-session-audit claude ./session.jsonl
 ```
 
-本地审计**不是**签名证明。原始 session 留在本地。旧审计 Action 放在 `mattheliu/model-pr-gate/actions/session-audit@v0.3.1`，仅适用于 runner 原本就有日志的情况，不推荐为了检查而上传隐私日志。
+本地审计**不是**签名证明。原始 session 留在本地。旧审计 Action 放在 `mattheliu/model-pr-gate/actions/session-audit@v0.4.0`，仅适用于 runner 原本就有日志的情况，不推荐为了检查而上传隐私日志。
 
 ## 隐私、迁移和开发
 

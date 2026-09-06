@@ -31,7 +31,22 @@ jobs:
       - name: Verify installable CLI package
         run: |
           npm pack --pack-destination "$RUNNER_TEMP"
-          npm install --global "$RUNNER_TEMP/model-pr-gate-0.3.1.tgz" --ignore-scripts
+          npm install --global "$RUNNER_TEMP/model-pr-gate-0.4.0.tgz" --ignore-scripts
           model-session-audit claude fixture.jsonl
           model-pr-gate --lang zh-CN --help
           node test/installed-proof.mjs
+  dsh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Install isolated DSH test runtime
+        run: |
+          npm install --global pnpm@10.28.2 --ignore-scripts --no-audit --no-fund
+          npm install --prefix "$RUNNER_TEMP/dsh-runtime" --ignore-scripts --no-audit --no-fund @deepseek-ai/dsh@0.1.2-rc.1
+      - name: Test packaged DSH plugin
+        run: |
+          npm pack ./plugins/dsh --pack-destination "$RUNNER_TEMP"
+          node test/dsh-runtime.mjs "$RUNNER_TEMP/dsh-runtime" "$RUNNER_TEMP/dsh-model-pr-gate-0.4.0.tgz"
